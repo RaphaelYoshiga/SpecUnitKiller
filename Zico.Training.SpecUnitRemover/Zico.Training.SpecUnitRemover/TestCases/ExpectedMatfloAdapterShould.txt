@@ -1,0 +1,125 @@
+﻿using System;
+using System.Collections.Generic;
+using Moq;
+using NUnit.Framework;
+using X.Inventory.Stock.Iwt.Common.ApiModels;
+using X.Inventory.Stock.Iwt.Common.DataAccess.DTO;
+using X.Inventory.Stock.Iwt.Common.Infrastructure;
+using X.Inventory.Stock.Iwt.Common.Service;
+using X.Inventory.Stock.Iwt.Tests.Common;
+using X.Inventory.Stock.IwtIntegrationService.Domain.StockBuild;
+
+
+namespace X.Inventory.Stock.Iwt.IntegrationService.Tests.Unit.StockBuild
+{
+    public class MatfloAdapterShould : UnitTest
+    {
+        private Mock<IMatfloApi> _matfloApi;
+        private MatfloAdapter _matfloAdapter;
+        private Mock<Clock> _clock;
+        private Mock<IProcessStockRequestListener> _listener;
+        private MatfloLoggingSender _matfloLoggingSender;
+        private int _interval;
+
+        [SetUp]
+        public void SetUp()
+        {
+            _clock = new Mock<Clock>();
+            _clock.Setup(m => m.Now()).Returns(DateTime.Now);
+            _matfloApi = new Mock<IMatfloApi>();
+            _listener = new Mock<IProcessStockRequestListener>();
+            _interval = 1;
+        }
+
+        [Test]
+        public void Collaborate_with_matflo_api_to_send_heartbeat_only_when_no_previous_heartbeat_sent()
+        {
+            i_have_an_instance_of_matflo();
+            i_send_a_heartbeat_request();
+            i_send_a_heartbeat_request);
+            we_only_call_matfloApi_0_(1, "heartbeat");
+        }
+
+        #region Setup
+
+        private void i_have_an_instance_of_matflo()
+        {
+            _matfloAdapter = new MatfloAdapter(_matfloApi.Object, _interval, _clock.Object);
+        }
+
+        private void heartbeat_interval_has_elapsed()
+        {
+            _clock.Setup(m => m.Now()).Returns(DateTime.Now.AddSeconds(2));
+        }
+
+        private void i_have_an_instance_of_heartbeat_logging_sender()
+        {
+            _matfloLoggingSender = new MatfloLoggingSender(new MatfloAdapter(_matfloApi.Object, _interval, _clock.Object), _listener.Object);
+        }
+
+        #endregion
+
+        #region When
+
+        private void i_send_a_matfloLoggingSender_heartbeat_request()
+        {
+            _matfloLoggingSender.SendHeartbeat();
+        }
+
+        private void i_send_matfloLoggingSender_a_confirmation_request()
+        {
+            var stockRequest = CreateStockRequest();
+            _matfloLoggingSender.SendProcessConfirmation(stockRequest);
+        }
+
+        private void i_send_a_heartbeat_request()
+        {
+            _matfloAdapter.SendHeartbeat();
+        }
+
+        private StockRequest CreateStockRequest()
+        {
+            return new StockRequest()
+            {
+                IwtAdviceId = "IwtAdviceTest",
+                MessageNo = 0,
+                Requests = new List<StockRequestItemQueue> {new StockRequestItemQueue()},
+                StockRequestType = StockRequestType.Allocate
+            };
+        }
+
+        #endregion
+
+        #region Then
+        private void we_call_the_process_stock_request_listener_to_log_matflo_response_for_sent_message()
+        {
+            _listener.Verify(m=>m.ResponseMessageReceivedFromMatflo(It.IsAny<MatfloResponse>()), Times.Once);
+        }
+
+        private void we_call_the_process_stock_request_listener_to_log_message_sent_to_matflo()
+        {
+            _listener.Verify(m=>m.ConfirmationMessageSentToMatflo(It.IsAny<StockRequest>()),Times.Once);
+        }
+
+        private void we_call_the_process_stock_request_listener_to_log_matflo_response_for_heartbeat()
+        {
+            _listener.Verify(m => m.RecordingMatfloResponse(It.IsAny<MatfloResponse>()), Times.Once);
+        }
+
+        private void we_call_the_process_stock_request_listener_to_log_matflo_heartbeat_request()
+        {
+            _listener.Verify(m=>m.SendingMatfloHeatbeatRequest(It.IsAny<StockCallbackRequest>()), Times.Once);
+        }
+
+        private void we_send_a_heartbeat_request_to_matflo_api()
+        {
+            _matfloApi.Verify(m => m.Callback(It.Is<StockCallbackRequest>(r => r.Operation == "heartbeat")));
+        }
+
+        private void we_only_call_matfloApi_0_(int numberOfCalls, string operationRequest)
+        {
+            _matfloApi.Verify(m => m.Callback(It.Is<StockCallbackRequest>(y => y.Operation == operationRequest)), Times.Exactly(numberOfCalls));
+        }
+#endregion
+    }
+}
