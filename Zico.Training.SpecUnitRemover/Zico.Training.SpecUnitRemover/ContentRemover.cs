@@ -2,44 +2,27 @@
 {
     class ContentRemover
     {
-        public string Remove(string parse)
+        private const string SEMICOLON = ";";
+        public string Remove(string value)
         {
-            var removeGiven = RemoveGiven(parse);
-
-            var removeWhen = RemoveWhen(removeGiven);
-
-            return RemoveAnd(removeWhen);
+            var removeGiven = RemoveCommandAndApplySemiColon(value, "Given(");
+            var removeWhen = RemoveCommandAndApplySemiColon(removeGiven, ".When(");
+            return RemoveCommandAndApplySemiColon(removeWhen, ".And(");
         }
 
-        private static string RemoveAnd(string removeWhen)
+        private static string RemoveCommandAndApplySemiColon(string removeWhen, string searchPattern)
         {
-            var whenIndex = removeWhen.IndexOf(".And(");
+            var whenIndex = removeWhen.IndexOf(searchPattern);
             if (whenIndex > 0)
-                return UpdateString(removeWhen, whenIndex, 5);
+                return UpdateString(removeWhen, whenIndex, searchPattern.Length);
             return removeWhen;
         }
 
-        private static string RemoveWhen(string removeGiven)
+        private static string UpdateString(string value, int index, int startIndex)
         {
-            var whenIndex = removeGiven.IndexOf(".When(");
-            if (whenIndex > 0)
-                return UpdateString(removeGiven, whenIndex, 6);
-            return removeGiven;
-        }
-
-        private static string RemoveGiven(string parse)
-        {
-            var givenIndex = parse.IndexOf("Given(");
-            if (givenIndex > 0)
-                return UpdateString(parse, givenIndex, 6);
-            return parse;
-        }
-
-        private static string UpdateString(string parse, int index, int startIndex)
-        {
-            string remove = parse.Remove(index, startIndex);
+            string remove = value.Remove(index, startIndex);
             int parenthesisIndex = remove.IndexOf(")", index);
-            var result = remove.Insert(parenthesisIndex, "(").Insert(parenthesisIndex + 2, ";");
+            var result = remove.Insert(parenthesisIndex, "(").Insert(parenthesisIndex + 2, SEMICOLON);
             return result;
         }
     }
