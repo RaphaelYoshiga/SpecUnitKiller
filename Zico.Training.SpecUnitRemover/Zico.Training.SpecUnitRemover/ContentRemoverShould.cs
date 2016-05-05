@@ -4,7 +4,7 @@ using NUnit.Framework;
 namespace Zico.Training.SpecUnitRemover
 {
     [TestFixture]
-    class ContentRemoverShould
+    public class ContentRemoverShould
     {
         private string parse =@"[Test]
         public void Collaborate_with_matflo_api_to_send_heartbeat_only_when_no_previous_heartbeat_sent()
@@ -28,7 +28,9 @@ namespace Zico.Training.SpecUnitRemover
         public void ReplaceGiven()
         {
             ContentRemover remover = new ContentRemover();
+
             var result = remover.Remove(parse);
+
             result.Should().Be(expected);
         }
     }

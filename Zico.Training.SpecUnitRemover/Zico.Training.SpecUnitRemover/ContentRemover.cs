@@ -4,10 +4,10 @@
     {
         public string Remove(string parse)
         {
-            var index = parse.IndexOf("Given(");
-            var foo = parse.Remove(index, 6);
-
-            //foo.IndexOf()
+            var givenIndex = parse.IndexOf("Given(");
+            string noGivenString = parse.Remove(givenIndex, 6);
+            int parenthesisIndex = noGivenString.IndexOf(")", givenIndex);
+            return noGivenString.Insert(parenthesisIndex, "(").Insert(parenthesisIndex + 2, ";");
         }
     }
 }
