@@ -1,6 +1,6 @@
-﻿namespace Zico.Training.SpecUnitRemover
+﻿namespace Zico.Training.SpecUnitRemover.App
 {
-    class ContentRemover
+    public class ContentRemover
     {
         private const string SEMICOLON = ";";
         public string Remove(string value)

@@ -1,4 +1,4 @@
-namespace Zico.Training.SpecUnitRemover
+namespace Zico.Training.SpecUnitRemover.App
 {
     public class Remover
     {
