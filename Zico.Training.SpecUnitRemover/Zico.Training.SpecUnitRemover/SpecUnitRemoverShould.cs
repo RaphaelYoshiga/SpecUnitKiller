@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Reflection;
 using NUnit.Framework;
 
@@ -42,13 +41,6 @@ namespace Zico.Training.SpecUnitRemover
             Directory.CreateDirectory(Path.Combine(binFolder, TEMP_FOLDER));
             string filePath = Path.Combine(binFolder, TEST_CASES_FOLDER, fileName);
             File.Copy(filePath, destinationFile, true);
-        }
-    }
-
-    public class Remover
-    {
-        public void Remove(string filePath)
-        {
         }
     }
 }
