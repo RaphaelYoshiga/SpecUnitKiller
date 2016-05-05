@@ -45,7 +45,7 @@ namespace Zico.Training.SpecUnitRemover
         }
 
         [Test]
-        public void RemoveTabbedSpace()
+        public void RemoveSpecUnitWithSpacing()
         {
             var result = _contentRemover.Remove(@"            Given(i_have_an_instance_of_matflo)
                 .When(i_send_a_heartbeat_request)
@@ -56,6 +56,28 @@ namespace Zico.Training.SpecUnitRemover
                 i_send_a_heartbeat_request();
                 i_send_a_heartbeat_request();
                 we_only_call_matfloApi_0_( 1, ""heartbeat"");");
+        }
+
+        [TestCase(" Given(we_only_call_matfloApi_0_, 1, Heartbeat.ToString())", " we_only_call_matfloApi_0_( 1, Heartbeat.ToString());")]
+        [TestCase(" Given(we_only_call_matfloApi_0_, Heartbeat.ToString(), Heartbeat.ToString())", " we_only_call_matfloApi_0_( Heartbeat.ToString(), Heartbeat.ToString());")]
+        public void NotChangeBracketsOnMethodsInParameters(string parse, string expected)
+        {
+            var result = _contentRemover.Remove(parse);
+            result.Should().Be(expected);
+        }
+
+        [Test]
+        public void NotChangeBracketsOnMethodsInParameters()
+        {
+            var result = _contentRemover.Remove(@"            Given(i_have_an_instance_of_matflo)
+                .When(i_send_a_heartbeat_request)
+                .And(i_send_a_heartbeat_request)
+                .Then(we_only_call_matfloApi_0_, 1, heartbeat.ToString());");
+
+            result.Should().Be(@"            i_have_an_instance_of_matflo();
+                i_send_a_heartbeat_request();
+                i_send_a_heartbeat_request();
+                we_only_call_matfloApi_0_( 1, heartbeat.ToString());");
         }
     }
 }

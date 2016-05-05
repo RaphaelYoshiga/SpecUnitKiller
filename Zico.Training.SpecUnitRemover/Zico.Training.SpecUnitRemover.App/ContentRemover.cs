@@ -17,16 +17,16 @@
             while (clauseStartIndex > 0)
             {
                 clause = RemoveClauseStart(clause, clauseStartIndex, searchPattern.Length);
-                var parenthesisIndex = clause.IndexOf(")", clauseStartIndex);
-                var parametersIndex = clause.IndexOf(",",clauseStartIndex,parenthesisIndex-clauseStartIndex);
+                var endParenthesisIndex = clause.IndexOf(")", clauseStartIndex);
+                var parametersIndex = clause.IndexOf(",",clauseStartIndex,endParenthesisIndex-clauseStartIndex);
 
                 if (parametersIndex > 0)
                 {
-                   clause = UpdateParameterMethod(clause, parenthesisIndex, parametersIndex);
+                   clause = UpdateParameterMethod(clause, endParenthesisIndex, parametersIndex);
                 }
                 else
                 {
-                    clause = UpdateSimpleMehthod(clause, parenthesisIndex);
+                    clause = UpdateSimpleMehthod(clause, endParenthesisIndex);
                 }
 
                 clauseStartIndex = clause.IndexOf(searchPattern);
@@ -34,15 +34,29 @@
             return clause;
         }
 
-        private static string UpdateParameterMethod(string clause, int parenthesisIndex, int indexOfComma)
+        private static string UpdateParameterMethod(string clause, int endParenthesisIndex, int indexOfComma)
         {
             var result = clause.Insert(indexOfComma+1, "(").Remove(indexOfComma, 1);
 
-            var endIndex = result.IndexOf(")", indexOfComma);
+            var endIndex = SkipMethodsInParameters(endParenthesisIndex, result);
+
             if (result.IndexOf(";",endIndex) == endIndex +1)
                 return result;
 
-            return result.Insert(parenthesisIndex + 1, SEMICOLON);
+            return result.Insert(endIndex + 1, SEMICOLON);
+        }
+
+        private static int SkipMethodsInParameters(int endParenthesisIndex, string result)
+        {
+            var endIndex = endParenthesisIndex;
+            var openIndex = result.IndexOf("(", endParenthesisIndex - 1);
+
+            while (openIndex + 1 == endIndex)
+            {
+                endIndex = result.IndexOf(")", endIndex + 1);
+                openIndex = result.IndexOf("(", openIndex + 1);
+            }
+            return endIndex;
         }
 
         private static string UpdateSimpleMehthod(string value, int parenthesisIndex)
