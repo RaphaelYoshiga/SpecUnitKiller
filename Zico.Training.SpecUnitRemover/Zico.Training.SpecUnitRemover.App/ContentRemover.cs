@@ -16,17 +16,17 @@
             var clauseStartIndex = clause.IndexOf(searchPattern);
             while (clauseStartIndex > 0)
             {
+                clause = RemoveClauseStart(clause, clauseStartIndex, searchPattern.Length);
                 var parenthesisIndex = clause.IndexOf(")", clauseStartIndex);
                 var parametersIndex = clause.IndexOf(",",clauseStartIndex,parenthesisIndex-clauseStartIndex);
-                clause = RemoveClauseStart(clause, clauseStartIndex, searchPattern.Length);
 
                 if (parametersIndex > 0)
                 {
-                   clause = UpdateParameterMethod(clause);
+                   clause = UpdateParameterMethod(clause, parenthesisIndex, parametersIndex);
                 }
                 else
                 {
-                    clause = UpdateSimpleMehthod(clause, clauseStartIndex);
+                    clause = UpdateSimpleMehthod(clause, parenthesisIndex);
                 }
 
                 clauseStartIndex = clause.IndexOf(searchPattern);
@@ -34,22 +34,19 @@
             return clause;
         }
 
-        private static string UpdateParameterMethod(string clause)
+        private static string UpdateParameterMethod(string clause, int parenthesisIndex, int indexOfComma)
         {
-            var indexOfComma = clause.IndexOf(",");
-            var parenthesisIndex = clause.IndexOf(")",indexOfComma);
             var result = clause.Insert(indexOfComma+1, "(").Remove(indexOfComma, 1);
 
-            var indexOf = result.IndexOf(")", indexOfComma);
-            if (result.IndexOf(";",indexOf) == indexOf +1)
+            var endIndex = result.IndexOf(")", indexOfComma);
+            if (result.IndexOf(";",endIndex) == endIndex +1)
                 return result;
 
             return result.Insert(parenthesisIndex + 1, SEMICOLON);
         }
 
-        private static string UpdateSimpleMehthod(string value, int index)
+        private static string UpdateSimpleMehthod(string value, int parenthesisIndex)
         {
-            int parenthesisIndex = value.IndexOf(")", index);
             var result = value.Insert(parenthesisIndex, "(").Insert(parenthesisIndex + 2, SEMICOLON);
             return result;
         }
