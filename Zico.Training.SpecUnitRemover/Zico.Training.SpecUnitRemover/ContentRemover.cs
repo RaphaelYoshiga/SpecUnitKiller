@@ -11,23 +11,46 @@
             return RemoveCommandAndApplySemiColon(removeAnd, ".Then(");
         }
 
-        private static string RemoveCommandAndApplySemiColon(string removeWhen, string searchPattern)
+        private static string RemoveCommandAndApplySemiColon(string clause, string searchPattern)
         {
-            var whenIndex = removeWhen.IndexOf(searchPattern);
-            while (whenIndex > 0)
+            var clauseStartIndex = clause.IndexOf(searchPattern);
+            while (clauseStartIndex > 0)
             {
-                removeWhen = UpdateString(removeWhen, whenIndex, searchPattern.Length);
-                whenIndex = removeWhen.IndexOf(searchPattern);
+                var parametersIndex = clause.IndexOf(",");
+                clause = RemoveClauseStart(clause, clauseStartIndex, searchPattern.Length);
+
+                if (parametersIndex > 0)
+                {
+                   clause = UpdateParameterMethod(clause);
+                }
+                else
+                {
+                    clause = UpdateSimpleMehthod(clause, clauseStartIndex);
+                }
+
+                clauseStartIndex = clause.IndexOf(searchPattern);
             }
-            return removeWhen;
+            return clause;
         }
 
-        private static string UpdateString(string value, int index, int startIndex)
+        private static string UpdateParameterMethod(string clause)
         {
-            string remove = value.Remove(index, startIndex);
-            int parenthesisIndex = remove.IndexOf(")", index);
-            var result = remove.Insert(parenthesisIndex, "(").Insert(parenthesisIndex + 2, SEMICOLON);
+            var indexOfComma = clause.IndexOf(",");
+            int parenthesisIndex = clause.IndexOf(")");
+            var result = clause.Insert(indexOfComma+1, "(").Remove(indexOfComma, 1).Insert(parenthesisIndex + 1, SEMICOLON);
             return result;
+        }
+
+        private static string UpdateSimpleMehthod(string value, int index)
+        {
+            int parenthesisIndex = value.IndexOf(")", index);
+            var result = value.Insert(parenthesisIndex, "(").Insert(parenthesisIndex + 2, SEMICOLON);
+            return result;
+        }
+
+        private static string RemoveClauseStart(string value, int index, int startIndex)
+        {
+            return value.Remove(index, startIndex);
         }
     }
 }
