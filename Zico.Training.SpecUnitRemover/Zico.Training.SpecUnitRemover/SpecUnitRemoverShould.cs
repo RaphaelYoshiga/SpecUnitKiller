@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Reflection;
 using NUnit.Framework;
+using Zico.Training.SpecUnitRemover.App;
 
 namespace Zico.Training.SpecUnitRemover
 {
