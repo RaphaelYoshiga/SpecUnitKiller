@@ -10,7 +10,7 @@ namespace Zico.Training.SpecUnitRemover
         [TestCase(" .When(i_send_a_heartbeat_request)", " i_send_a_heartbeat_request();")]
         [TestCase(" .And(i_send_a_heartbeat_request)", " i_send_a_heartbeat_request();")]
         [TestCase(" .Then(i_send_a_heartbeat_request)", " i_send_a_heartbeat_request();")]
-        public void RemoveSpecUnit(string parse, string expected)
+        public void SimpleSpecUnitRemover(string parse, string expected)
         {
             ContentRemover remover = new ContentRemover();
 
@@ -19,10 +19,17 @@ namespace Zico.Training.SpecUnitRemover
             result.Should().Be(expected);
         }
 
-        private const string intialString = @"
-            Given(i_have_an_instance_of_matflo)
-                .When(i_send_a_heartbeat_request)
-                .And(i_send_a_heartbeat_request)
-                .Then(we_only_call_matfloApi_0_, 1, ""heartbeat"");";
+        [TestCase(" .And(i_send_a_heartbeat_request) .And(i_send_a_heartbeat_request)", " i_send_a_heartbeat_request(); i_send_a_heartbeat_request();")]
+        [TestCase(" .When(i_send_a_heartbeat_request) .When(i_send_a_heartbeat_request)", " i_send_a_heartbeat_request(); i_send_a_heartbeat_request();")]
+        [TestCase(" .Then(i_send_a_heartbeat_request) .Then(i_send_a_heartbeat_request)", " i_send_a_heartbeat_request(); i_send_a_heartbeat_request();")]
+        [TestCase(" Given(i_send_a_heartbeat_request) Given(i_send_a_heartbeat_request)", " i_send_a_heartbeat_request(); i_send_a_heartbeat_request();")]
+        public void LoopForMultipleClauses(string parse, string expected)
+        {
+            ContentRemover remover = new ContentRemover();
+
+            var result = remover.Remove(parse);
+
+            result.Should().Be(expected);
+        }
     }
 }

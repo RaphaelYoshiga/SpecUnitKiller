@@ -14,8 +14,11 @@
         private static string RemoveCommandAndApplySemiColon(string removeWhen, string searchPattern)
         {
             var whenIndex = removeWhen.IndexOf(searchPattern);
-            if (whenIndex > 0)
-                return UpdateString(removeWhen, whenIndex, searchPattern.Length);
+            while (whenIndex > 0)
+            {
+                removeWhen = UpdateString(removeWhen, whenIndex, searchPattern.Length);
+                whenIndex = removeWhen.IndexOf(searchPattern);
+            }
             return removeWhen;
         }
 
