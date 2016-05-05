@@ -9,7 +9,8 @@ namespace Zico.Training.SpecUnitRemover
         [TestCase(" Given(i_have_an_instance_of_matflo)", " i_have_an_instance_of_matflo();")]
         [TestCase(" .When(i_send_a_heartbeat_request)", " i_send_a_heartbeat_request();")]
         [TestCase(" .And(i_send_a_heartbeat_request)", " i_send_a_heartbeat_request();")]
-        public void ReplaceGiven(string parse, string expected)
+        [TestCase(" .Then(i_send_a_heartbeat_request)", " i_send_a_heartbeat_request();")]
+        public void RemoveSpecUnit(string parse, string expected)
         {
             ContentRemover remover = new ContentRemover();
 

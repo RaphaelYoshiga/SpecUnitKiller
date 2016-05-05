@@ -7,7 +7,8 @@
         {
             var removeGiven = RemoveCommandAndApplySemiColon(value, "Given(");
             var removeWhen = RemoveCommandAndApplySemiColon(removeGiven, ".When(");
-            return RemoveCommandAndApplySemiColon(removeWhen, ".And(");
+            var removeAnd = RemoveCommandAndApplySemiColon(removeWhen, ".And(");
+            return RemoveCommandAndApplySemiColon(removeAnd, ".Then(");
         }
 
         private static string RemoveCommandAndApplySemiColon(string removeWhen, string searchPattern)
