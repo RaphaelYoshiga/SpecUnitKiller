@@ -16,7 +16,8 @@
             var clauseStartIndex = clause.IndexOf(searchPattern);
             while (clauseStartIndex > 0)
             {
-                var parametersIndex = clause.IndexOf(",");
+                var parenthesisIndex = clause.IndexOf(")", clauseStartIndex);
+                var parametersIndex = clause.IndexOf(",",clauseStartIndex,parenthesisIndex-clauseStartIndex);
                 clause = RemoveClauseStart(clause, clauseStartIndex, searchPattern.Length);
 
                 if (parametersIndex > 0)
@@ -36,9 +37,14 @@
         private static string UpdateParameterMethod(string clause)
         {
             var indexOfComma = clause.IndexOf(",");
-            int parenthesisIndex = clause.IndexOf(")");
-            var result = clause.Insert(indexOfComma+1, "(").Remove(indexOfComma, 1).Insert(parenthesisIndex + 1, SEMICOLON);
-            return result;
+            var parenthesisIndex = clause.IndexOf(")",indexOfComma);
+            var result = clause.Insert(indexOfComma+1, "(").Remove(indexOfComma, 1);
+
+            var indexOf = result.IndexOf(")", indexOfComma);
+            if (result.IndexOf(";",indexOf) == indexOf +1)
+                return result;
+
+            return result.Insert(parenthesisIndex + 1, SEMICOLON);
         }
 
         private static string UpdateSimpleMehthod(string value, int index)

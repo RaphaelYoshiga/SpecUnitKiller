@@ -43,5 +43,19 @@ namespace Zico.Training.SpecUnitRemover
             var result = _contentRemover.Remove(parse);
             result.Should().Be(expected);
         }
+
+        [Test]
+        public void RemoveTabbedSpace()
+        {
+            var result = _contentRemover.Remove(@"            Given(i_have_an_instance_of_matflo)
+                .When(i_send_a_heartbeat_request)
+                .And(i_send_a_heartbeat_request)
+                .Then(we_only_call_matfloApi_0_, 1, ""heartbeat"");");
+
+            result.Should().Be(@"            i_have_an_instance_of_matflo();
+                i_send_a_heartbeat_request();
+                i_send_a_heartbeat_request();
+                we_only_call_matfloApi_0_( 1, ""heartbeat"");");
+        }
     }
 }
