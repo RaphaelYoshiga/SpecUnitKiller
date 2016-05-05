@@ -6,16 +6,16 @@ using Zico.Training.SpecUnitRemover.App;
 namespace Zico.Training.SpecUnitRemover
 {
     [TestFixture]
-    public class SpecUnitRemoverShould
+    public class AcceptanceTest
     {
         private const string TEMP_FOLDER = "Temp";
         private const string TEST_CASES_FOLDER = "TestCases";
-        private Remover _specUnitRemover;
+        private FileTransformer _specUnitRemover;
 
         [SetUp]
         public void BeforeEachTest()
         {
-            _specUnitRemover = new Remover();
+            _specUnitRemover = new SpecUnitFileTransformer(new DotNetFileReader(), new ContentRemover(), new DotNetFileWriter());
         }
 
         [TestCase("MatfloAdapterShould.txt", "ExpectedMatfloAdapterShould.txt")]
@@ -25,7 +25,7 @@ namespace Zico.Training.SpecUnitRemover
             string destinationFile = Path.Combine(binFolder, TEMP_FOLDER, fileName);
             MoveFileToTempFolder(binFolder, destinationFile, fileName);
 
-            _specUnitRemover.Remove(destinationFile);
+            _specUnitRemover.Transform(destinationFile);
 
             var actualFileContent = File.ReadAllText(destinationFile);
             var expectedContent = File.ReadAllText(Path.Combine(binFolder, TEST_CASES_FOLDER, expectedFileName));

@@ -14,13 +14,13 @@ namespace Zico.Training.SpecUnitRemover
     {
         private Mock<FilesProvider> _filesProviderMock;
         private SpecUnitRemoverOrchestrator _orchestrator;
-        private Mock<SpecUnitFileRemover> _fileRemoverMock;
+        private Mock<FileTransformer> _fileRemoverMock;
 
         [SetUp]
         public void BeforeEachTest()
         {
             _filesProviderMock = new Mock<FilesProvider>();
-            _fileRemoverMock = new Mock<SpecUnitFileRemover>();
+            _fileRemoverMock = new Mock<FileTransformer>();
             _orchestrator = new SpecUnitRemoverOrchestrator(_filesProviderMock.Object, _fileRemoverMock.Object);
         }
 
@@ -49,7 +49,7 @@ namespace Zico.Training.SpecUnitRemover
             _orchestrator.RemoveSpecUnitFromTests("");
 
             foreach (var filePath in filePaths)
-                _fileRemoverMock.Verify(p => p.Remove(filePath), Times.Once);
+                _fileRemoverMock.Verify(p => p.Transform(filePath), Times.Once);
         }
 
     }
