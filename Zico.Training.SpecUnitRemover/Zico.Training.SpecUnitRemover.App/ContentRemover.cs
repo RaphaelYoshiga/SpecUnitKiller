@@ -1,22 +1,33 @@
-﻿namespace Zico.Training.SpecUnitRemover.App
+﻿using System.Linq;
+
+namespace Zico.Training.SpecUnitRemover.App
 {
     public class ContentRemover
     {
+        //private static int _indentation;
         private const string SEMICOLON = ";";
         public string Remove(string value)
         {
             var removeGiven = RemoveCommandAndApplySemiColon(value, "Given(");
             var removeWhen = RemoveCommandAndApplySemiColon(removeGiven, ".When(");
             var removeAnd = RemoveCommandAndApplySemiColon(removeWhen, ".And(");
-            return RemoveCommandAndApplySemiColon(removeAnd, ".Then(");
+            var removeThen = RemoveCommandAndApplySemiColon(removeAnd, ".Then(");
+            return removeThen;
         }
 
         private static string RemoveCommandAndApplySemiColon(string clause, string searchPattern)
         {
             var clauseStartIndex = clause.IndexOf(searchPattern);
+
+            //if (searchPattern == "Given(")
+            //{
+            //    var reverseClause = clause.Substring(0,clauseStartIndex).ToCharArray().Reverse().ToList();
+            //    _indentation = reverseClause.IndexOf('\n');
+            //}
+
             while (clauseStartIndex > 0)
             {
-                clause = RemoveClauseStart(clause, clauseStartIndex, searchPattern.Length);
+                clause = RemoveClauseStart(clause, clauseStartIndex, searchPattern);
                 var endParenthesisIndex = clause.IndexOf(")", clauseStartIndex);
                 var parametersIndex = clause.IndexOf(",",clauseStartIndex,endParenthesisIndex-clauseStartIndex);
 
@@ -65,9 +76,12 @@
             return result;
         }
 
-        private static string RemoveClauseStart(string value, int index, int startIndex)
+        private static string RemoveClauseStart(string value, int index, string searchPattern)
         {
-            return value.Remove(index, startIndex);
+            var startIndex = index-4;
+            if (searchPattern == "Given(" || startIndex > 0 == false)
+                return value.Remove(index, searchPattern.Length);
+            return value.Remove(startIndex, searchPattern.Length+4);
         }
     }
 }

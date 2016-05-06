@@ -35,9 +35,9 @@ namespace X.Inventory.Stock.Iwt.IntegrationService.Tests.Unit.StockBuild
         public void Collaborate_with_matflo_api_to_send_heartbeat_only_when_no_previous_heartbeat_sent()
         {
             i_have_an_instance_of_matflo();
-				i_send_a_heartbeat_request();
-				i_send_a_heartbeat_request);
-				we_only_call_matfloApi_0_(1, "heartbeat");
+			i_send_a_heartbeat_request();
+			i_send_a_heartbeat_request);
+			we_only_call_matfloApi_0_(1, "heartbeat");
         }
 
         #region Setup
