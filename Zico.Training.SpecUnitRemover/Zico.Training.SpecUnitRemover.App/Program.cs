@@ -8,7 +8,7 @@ namespace Zico.Training.SpecUnitRemover.App
 {
     class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
             string solutionPath = "C:\\Test\\";
             Console.WriteLine("Starting to remove SpecUnit from: {0}", solutionPath);
