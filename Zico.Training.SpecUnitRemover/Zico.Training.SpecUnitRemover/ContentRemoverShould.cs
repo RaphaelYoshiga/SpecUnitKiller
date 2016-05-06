@@ -57,8 +57,8 @@ namespace Zico.Training.SpecUnitRemover
             we_only_call_matfloApi_0_(1, ""heartbeat"");");
         }
 
-        [TestCase(" Given(we_only_call_matfloApi_0_, 1, Heartbeat.ToString())", " we_only_call_matfloApi_0_(1, Heartbeat.ToString());")]
-        [TestCase(" Given(we_only_call_matfloApi_0_, Heartbeat.ToString(), Heartbeat.ToString())", " we_only_call_matfloApi_0_(Heartbeat.ToString(), Heartbeat.ToString());")]
+        [TestCase(" Given(we_only_call_matfloApi_0_, 1, Heartbeat.ToString()) .", " we_only_call_matfloApi_0_(1, Heartbeat.ToString()); .")]
+        [TestCase(" Given(we_only_call_matfloApi_0_, Heartbeat.ToString(), Heartbeat.ToString()) .", " we_only_call_matfloApi_0_(Heartbeat.ToString(), Heartbeat.ToString()); .")]
         public void NotChangeBracketsOnMethodsInParameters(string parse, string expected)
         {
             var result = _contentRemover.Remove(parse);

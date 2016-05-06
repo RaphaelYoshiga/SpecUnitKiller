@@ -1,4 +1,6 @@
-﻿namespace Zico.Training.SpecUnitRemover.App
+﻿using System;
+
+namespace Zico.Training.SpecUnitRemover.App
 {
     public interface IContentRemover
     {
@@ -45,23 +47,30 @@
 
         private static void CalculateIndexes(string clause)
         {
-            _endParenthesisIndex = clause.IndexOf(")", _clauseStartIndex);
+            _endParenthesisIndex = GetEndParenthesisIndex(clause);
 
             _parametersIndex = clause.IndexOf(",", _clauseStartIndex, _endParenthesisIndex - _clauseStartIndex);
         }
 
+        private static int GetEndParenthesisIndex(string clause)
+        {
+            int breakLine = clause.IndexOf(" .", _clauseStartIndex);
+            int semicolon = clause.IndexOf(';', _clauseStartIndex);
+            int maxSearch = breakLine > 0 ? breakLine : semicolon;
+            return maxSearch > 0 ? clause.LastIndexOf(")", maxSearch) : clause.LastIndexOf(")");
+        }
+
         private static string UpdateParameterMethod(string clause)
         {
-            string parenthesisInsert = clause.Insert(_parametersIndex, "(");
-            var commaRemoval = parenthesisInsert
+            clause = clause.Insert(_parametersIndex, "(");
+            var commaRemoval = clause
                 .Remove(_parametersIndex + 1, 1);
-            //commaRemoval = RemoveBlankSpaces(commaRemoval);
+            commaRemoval = RemoveBlankSpaces(commaRemoval);
             var endIndex = SkipMethodsInParameters(commaRemoval);
 
-            if (commaRemoval.IndexOf(";", endIndex) == endIndex + 1)
+            if (commaRemoval.IndexOf(";", endIndex) == endIndex)
                 return commaRemoval;
-
-            return commaRemoval.Insert(endIndex + 1, SEMICOLON);
+            return commaRemoval.Insert(endIndex, SEMICOLON);
         }
 
         private static string RemoveBlankSpaces(string result)
