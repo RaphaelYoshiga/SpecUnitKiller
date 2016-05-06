@@ -52,14 +52,28 @@
 
         private static string UpdateParameterMethod(string clause)
         {
-            var result = clause.Insert(_parametersIndex + 1, "(").Remove(_parametersIndex, 1);
+            string parenthesisInsert = clause.Insert(_parametersIndex, "(");
+            var commaRemoval = parenthesisInsert
+                .Remove(_parametersIndex + 1, 1);
+            //commaRemoval = RemoveBlankSpaces(commaRemoval);
+            var endIndex = SkipMethodsInParameters(commaRemoval);
 
-            var endIndex = SkipMethodsInParameters(result);
+            if (commaRemoval.IndexOf(";", endIndex) == endIndex + 1)
+                return commaRemoval;
 
-            if (result.IndexOf(";",endIndex) == endIndex +1)
-                return result;
+            return commaRemoval.Insert(endIndex + 1, SEMICOLON);
+        }
 
-            return result.Insert(endIndex + 1, SEMICOLON);
+        private static string RemoveBlankSpaces(string result)
+        {
+            int spaceIndex = _parametersIndex + 1;
+            char x = result[spaceIndex];
+            while (x.Equals(' '))
+            {
+                result = result.Remove(spaceIndex, 1);
+                x = result[spaceIndex];
+            }
+            return result;
         }
 
         private static int SkipMethodsInParameters(string result)

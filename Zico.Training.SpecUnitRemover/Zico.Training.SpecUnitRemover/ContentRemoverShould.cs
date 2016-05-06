@@ -34,9 +34,9 @@ namespace Zico.Training.SpecUnitRemover
             result.Should().Be(expected);
         }
 
-        [TestCase(" .Then(we_only_call_matfloApi_0_, 1)", " we_only_call_matfloApi_0_( 1);")]
-        [TestCase(" .When(we_only_call_matfloApi_0_, 1, \"Heartbeat\")", " we_only_call_matfloApi_0_( 1, \"Heartbeat\");")]
-        [TestCase(" Given(we_only_call_matfloApi_0_, 1, \"Heartbeat\")", " we_only_call_matfloApi_0_( 1, \"Heartbeat\");")]
+        [TestCase(" .Then(we_only_call_matfloApi_0_, 1)", " we_only_call_matfloApi_0_(1);")]
+        [TestCase(" .When(we_only_call_matfloApi_0_, 1, \"Heartbeat\")", " we_only_call_matfloApi_0_(1, \"Heartbeat\");")]
+        [TestCase(" Given(we_only_call_matfloApi_0_, 1, \"Heartbeat\")", " we_only_call_matfloApi_0_(1, \"Heartbeat\");")]
         public void RemoveSpecUnitForClausesWithParameters(string parse, string expected)
         {
             var result = _contentRemover.Remove(parse);
@@ -54,11 +54,11 @@ namespace Zico.Training.SpecUnitRemover
             result.Should().Be(@"            i_have_an_instance_of_matflo();
             i_send_a_heartbeat_request();
             i_send_a_heartbeat_request();
-            we_only_call_matfloApi_0_( 1, ""heartbeat"");");
+            we_only_call_matfloApi_0_(1, ""heartbeat"");");
         }
 
-        [TestCase(" Given(we_only_call_matfloApi_0_, 1, Heartbeat.ToString())", " we_only_call_matfloApi_0_( 1, Heartbeat.ToString());")]
-        [TestCase(" Given(we_only_call_matfloApi_0_, Heartbeat.ToString(), Heartbeat.ToString())", " we_only_call_matfloApi_0_( Heartbeat.ToString(), Heartbeat.ToString());")]
+        [TestCase(" Given(we_only_call_matfloApi_0_, 1, Heartbeat.ToString())", " we_only_call_matfloApi_0_(1, Heartbeat.ToString());")]
+        [TestCase(" Given(we_only_call_matfloApi_0_, Heartbeat.ToString(), Heartbeat.ToString())", " we_only_call_matfloApi_0_(Heartbeat.ToString(), Heartbeat.ToString());")]
         public void NotChangeBracketsOnMethodsInParameters(string parse, string expected)
         {
             var result = _contentRemover.Remove(parse);
@@ -83,7 +83,7 @@ namespace Zico.Training.SpecUnitRemover
             i_have_an_instance_of_matflo();
             i_send_a_heartbeat_request();
             i_send_a_heartbeat_request();
-            we_only_call_matfloApi_0_( 1, heartbeat.ToString());
+            we_only_call_matfloApi_0_(1, heartbeat.ToString());
         }");
         }
     }
