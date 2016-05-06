@@ -64,7 +64,13 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
+    <Content Include="TestCases\ExpectedIwtAdviceWriterTests.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="TestCases\ExpectedMatfloAdapterShould.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestCases\IwtAdviceWriterTests.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="TestCases\MatfloAdapterShould.txt">
