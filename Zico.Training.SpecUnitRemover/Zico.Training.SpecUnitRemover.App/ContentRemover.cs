@@ -7,6 +7,9 @@
 
     public class ContentRemover : IContentRemover
     {
+        private static int _endParenthesisIndex;
+        private static int _clauseStartIndex;
+        private static int _parametersIndex;
         private const string SEMICOLON = ";";
         public string Remove(string value)
         {
@@ -18,44 +21,72 @@
 
         private static string RemoveCommandAndApplySemiColon(string clause, string searchPattern)
         {
-            var clauseStartIndex = clause.IndexOf(searchPattern);
-            while (clauseStartIndex > 0)
-            {
-                var parametersIndex = clause.IndexOf(",");
-                clause = RemoveClauseStart(clause, clauseStartIndex, searchPattern.Length);
+            _clauseStartIndex = clause.IndexOf(searchPattern);
 
-                if (parametersIndex > 0)
+            while (_clauseStartIndex > 0)
+            {
+                clause = RemoveClauseStart(clause, searchPattern);
+
+                CalculateIndexes(clause);
+
+                if (_parametersIndex > 0)
                 {
-                   clause = UpdateParameterMethod(clause);
+                    clause = UpdateParameterMethod(clause);
                 }
                 else
                 {
-                    clause = UpdateSimpleMehthod(clause, clauseStartIndex);
+                    clause = UpdateSimpleMehthod(clause);
                 }
 
-                clauseStartIndex = clause.IndexOf(searchPattern);
+                _clauseStartIndex = clause.IndexOf(searchPattern);
             }
             return clause;
         }
 
+        private static void CalculateIndexes(string clause)
+        {
+            _endParenthesisIndex = clause.IndexOf(")", _clauseStartIndex);
+
+            _parametersIndex = clause.IndexOf(",", _clauseStartIndex, _endParenthesisIndex - _clauseStartIndex);
+        }
+
         private static string UpdateParameterMethod(string clause)
         {
-            var indexOfComma = clause.IndexOf(",");
-            int parenthesisIndex = clause.IndexOf(")");
-            var result = clause.Insert(indexOfComma+1, "(").Remove(indexOfComma, 1).Insert(parenthesisIndex + 1, SEMICOLON);
+            var result = clause.Insert(_parametersIndex + 1, "(").Remove(_parametersIndex, 1);
+
+            var endIndex = SkipMethodsInParameters(result);
+
+            if (result.IndexOf(";",endIndex) == endIndex +1)
+                return result;
+
+            return result.Insert(endIndex + 1, SEMICOLON);
+        }
+
+        private static int SkipMethodsInParameters(string result)
+        {
+            var endIndex = _endParenthesisIndex;
+            var openIndex = result.IndexOf("(", _endParenthesisIndex - 1);
+
+            while (openIndex + 1 == endIndex)
+            {
+                endIndex = result.IndexOf(")", endIndex + 1);
+                openIndex = result.IndexOf("(", openIndex + 1);
+            }
+            return endIndex;
+        }
+
+        private static string UpdateSimpleMehthod(string value)
+        {
+            var result = value.Insert(_endParenthesisIndex, "(").Insert(_endParenthesisIndex + 2, SEMICOLON);
             return result;
         }
 
-        private static string UpdateSimpleMehthod(string value, int index)
+        private static string RemoveClauseStart(string value, string searchPattern)
         {
-            int parenthesisIndex = value.IndexOf(")", index);
-            var result = value.Insert(parenthesisIndex, "(").Insert(parenthesisIndex + 2, SEMICOLON);
-            return result;
-        }
-
-        private static string RemoveClauseStart(string value, int index, int startIndex)
-        {
-            return value.Remove(index, startIndex);
+            var removeIndentation = _clauseStartIndex - 4;
+            if (searchPattern == "Given(" || removeIndentation > 0 == false)
+                return value.Remove(_clauseStartIndex, searchPattern.Length);
+            return value.Remove(removeIndentation, searchPattern.Length + 4);
         }
     }
 }
