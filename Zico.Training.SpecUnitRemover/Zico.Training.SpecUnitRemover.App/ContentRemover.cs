@@ -4,26 +4,18 @@ namespace Zico.Training.SpecUnitRemover.App
 {
     public class ContentRemover
     {
-        //private static int _indentation;
         private const string SEMICOLON = ";";
         public string Remove(string value)
         {
             var removeGiven = RemoveCommandAndApplySemiColon(value, "Given(");
             var removeWhen = RemoveCommandAndApplySemiColon(removeGiven, ".When(");
             var removeAnd = RemoveCommandAndApplySemiColon(removeWhen, ".And(");
-            var removeThen = RemoveCommandAndApplySemiColon(removeAnd, ".Then(");
-            return removeThen;
+            return RemoveCommandAndApplySemiColon(removeAnd, ".Then(");
         }
 
         private static string RemoveCommandAndApplySemiColon(string clause, string searchPattern)
         {
             var clauseStartIndex = clause.IndexOf(searchPattern);
-
-            //if (searchPattern == "Given(")
-            //{
-            //    var reverseClause = clause.Substring(0,clauseStartIndex).ToCharArray().Reverse().ToList();
-            //    _indentation = reverseClause.IndexOf('\n');
-            //}
 
             while (clauseStartIndex > 0)
             {
@@ -78,10 +70,10 @@ namespace Zico.Training.SpecUnitRemover.App
 
         private static string RemoveClauseStart(string value, int index, string searchPattern)
         {
-            var startIndex = index-4;
-            if (searchPattern == "Given(" || startIndex > 0 == false)
+            var removeIndentation = index-4;
+            if (searchPattern == "Given(" || removeIndentation > 0 == false)
                 return value.Remove(index, searchPattern.Length);
-            return value.Remove(startIndex, searchPattern.Length+4);
+            return value.Remove(removeIndentation, searchPattern.Length + 4);
         }
     }
 }
