@@ -1,9 +1,10 @@
-﻿using System.Linq;
-
-namespace Zico.Training.SpecUnitRemover.App
+﻿namespace Zico.Training.SpecUnitRemover.App
 {
     public class ContentRemover
     {
+        private static int _endParenthesisIndex;
+        private static int _clauseStartIndex;
+        private static int _parametersIndex;
         private const string SEMICOLON = ";";
         public string Remove(string value)
         {
@@ -15,33 +16,40 @@ namespace Zico.Training.SpecUnitRemover.App
 
         private static string RemoveCommandAndApplySemiColon(string clause, string searchPattern)
         {
-            var clauseStartIndex = clause.IndexOf(searchPattern);
+            _clauseStartIndex = clause.IndexOf(searchPattern);
 
-            while (clauseStartIndex > 0)
+            while (_clauseStartIndex > 0)
             {
-                clause = RemoveClauseStart(clause, clauseStartIndex, searchPattern);
-                var endParenthesisIndex = clause.IndexOf(")", clauseStartIndex);
-                var parametersIndex = clause.IndexOf(",",clauseStartIndex,endParenthesisIndex-clauseStartIndex);
+                clause = RemoveClauseStart(clause, searchPattern);
 
-                if (parametersIndex > 0)
+                CalculateIndexes(clause);
+
+                if (_parametersIndex > 0)
                 {
-                   clause = UpdateParameterMethod(clause, endParenthesisIndex, parametersIndex);
+                    clause = UpdateParameterMethod(clause);
                 }
                 else
                 {
-                    clause = UpdateSimpleMehthod(clause, endParenthesisIndex);
+                    clause = UpdateSimpleMehthod(clause);
                 }
 
-                clauseStartIndex = clause.IndexOf(searchPattern);
+                _clauseStartIndex = clause.IndexOf(searchPattern);
             }
             return clause;
         }
 
-        private static string UpdateParameterMethod(string clause, int endParenthesisIndex, int indexOfComma)
+        private static void CalculateIndexes(string clause)
         {
-            var result = clause.Insert(indexOfComma+1, "(").Remove(indexOfComma, 1);
+            _endParenthesisIndex = clause.IndexOf(")", _clauseStartIndex);
 
-            var endIndex = SkipMethodsInParameters(endParenthesisIndex, result);
+            _parametersIndex = clause.IndexOf(",", _clauseStartIndex, _endParenthesisIndex - _clauseStartIndex);
+        }
+
+        private static string UpdateParameterMethod(string clause)
+        {
+            var result = clause.Insert(_parametersIndex + 1, "(").Remove(_parametersIndex, 1);
+
+            var endIndex = SkipMethodsInParameters(result);
 
             if (result.IndexOf(";",endIndex) == endIndex +1)
                 return result;
@@ -49,10 +57,10 @@ namespace Zico.Training.SpecUnitRemover.App
             return result.Insert(endIndex + 1, SEMICOLON);
         }
 
-        private static int SkipMethodsInParameters(int endParenthesisIndex, string result)
+        private static int SkipMethodsInParameters(string result)
         {
-            var endIndex = endParenthesisIndex;
-            var openIndex = result.IndexOf("(", endParenthesisIndex - 1);
+            var endIndex = _endParenthesisIndex;
+            var openIndex = result.IndexOf("(", _endParenthesisIndex - 1);
 
             while (openIndex + 1 == endIndex)
             {
@@ -62,17 +70,17 @@ namespace Zico.Training.SpecUnitRemover.App
             return endIndex;
         }
 
-        private static string UpdateSimpleMehthod(string value, int parenthesisIndex)
+        private static string UpdateSimpleMehthod(string value)
         {
-            var result = value.Insert(parenthesisIndex, "(").Insert(parenthesisIndex + 2, SEMICOLON);
+            var result = value.Insert(_endParenthesisIndex, "(").Insert(_endParenthesisIndex + 2, SEMICOLON);
             return result;
         }
 
-        private static string RemoveClauseStart(string value, int index, string searchPattern)
+        private static string RemoveClauseStart(string value, string searchPattern)
         {
-            var removeIndentation = index-4;
+            var removeIndentation = _clauseStartIndex - 4;
             if (searchPattern == "Given(" || removeIndentation > 0 == false)
-                return value.Remove(index, searchPattern.Length);
+                return value.Remove(_clauseStartIndex, searchPattern.Length);
             return value.Remove(removeIndentation, searchPattern.Length + 4);
         }
     }
