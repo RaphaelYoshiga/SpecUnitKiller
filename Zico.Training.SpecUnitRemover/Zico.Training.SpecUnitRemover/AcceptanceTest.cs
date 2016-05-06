@@ -19,6 +19,7 @@ namespace Zico.Training.SpecUnitRemover
         }
 
         [TestCase("MatfloAdapterShould.txt", "ExpectedMatfloAdapterShould.txt")]
+        [TestCase("IwtAdviceWriterTests.txt", "ExpectedIwtAdviceWriterTests.txt")]
         public void RemoveSpecUnitUsage(string fileName, string expectedFileName)
         {
             string binFolder = GetBinFolderPath();

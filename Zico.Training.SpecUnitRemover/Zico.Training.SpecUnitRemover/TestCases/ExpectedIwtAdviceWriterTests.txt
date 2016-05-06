@@ -1,0 +1,126 @@
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using X.Inventory.Stock.Iwt.Common.DataAccess;
+using X.Inventory.Stock.Iwt.Common.DataAccess.Commands;
+using X.Inventory.Stock.Iwt.Common.InterfaceSpecifications;
+using X.Inventory.Stock.Iwt.Common.Service.Configuration;
+using X.Inventory.Stock.IwtAdviceService.Domain.Iwt;
+using X.SpecUnit;
+using Moq;
+using NUnit.Framework;
+
+namespace X.Inventory.Stock.IwtAdviceService.UnitTests.Domain.Iwt
+{
+    [TestFixture]
+    class IwtAdviceWriterTests : Specification
+    {
+        private Mock<ICommandAndQueryExecutor> _commandAndQueryExecutor;
+        private IwtAdviceWriter _writer;
+        private Mock<IIwtSerialiser> _serialiserMock;
+        private List<SkuItem> _skus;
+        private int maxNoOfSkus = 1000;
+
+        [TearDown]
+        public void TearDown()
+        {
+            _commandAndQueryExecutor.Verify();
+        }
+
+        [Test]
+        public void writes_to_database_and_to_disk()
+        {
+            i_have_an_IwtAdviceWriter_instance();
+            i_have_a_set_of_orphan_skus();
+            i_write_the_advice_to_be_dispatched_from_warehouse_0_and_received_by_warehouse_1_and_as_type_2_("FC04", "FC01", IwtType.Orphaned, StatusCode.Open);
+            _0_iwt_advice_are_persisted_to_the_database(1);
+            the_iwt_advice_is_written_to_disk();
+        }
+
+        [TestCase(500, 1)]
+        [TestCase(999, 1)]
+        [TestCase(1000, 1)]
+        [TestCase(1001, 2)]
+        [TestCase(9500, 10)]
+        [TestCase(10000, 10)]
+        [TestCase(19000, 19)]
+        [TestCase(19001, 20)]
+        public void writes_to_databse_and_a_max_of_9500_skus_per_advice(int numberOfOrphanSkus, int expectedIwtAdvices)
+        {
+            i_have_an_IwtAdviceWriter_instance();
+            i_have_a_set_of_0_orphan_skus, numberOfOrphanSkus);
+            i_write_the_advice_to_be_dispatched_from_warehouse_0_and_received_by_warehouse_1_and_as_type_2_(
+                      "FC04", "FC01", IwtType.Orphaned, StatusCode.Open);
+            _0_iwt_advice_are_persisted_to_the_database, expectedIwtAdvices);
+            _0_iwt_advice_are_written_to_disk(expectedIwtAdvices);
+        }
+
+        private void the_database_raises_an_error_when_accessed()
+        {
+            _commandAndQueryExecutor.Setup(x => x.Execute(It.IsAny<ICommand>())).Throws<Exception>();
+        }
+
+        private void the_iwt_advice_is_written_to_disk()
+        {
+            _serialiserMock.Verify(x => x.Serialise(It.IsAny<IwtAdviceFile>(), It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+        }
+
+        private void _0_iwt_advice_are_written_to_disk(int count)
+        {
+            _serialiserMock.Verify(x => x.Serialise(It.Is<IwtAdviceFile>(file => file.Advice.Length <= maxNoOfSkus), It.IsAny<string>(), It.IsAny<string>()), Times.Exactly(count));
+        }
+
+        private void the_iwt_advice_is_not_written_to_disk()
+        {
+            _serialiserMock.Verify(x => x.Serialise(It.IsAny<IwtAdviceFile>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        }
+
+        private void _0_iwt_advice_are_persisted_to_the_database(int count)
+        {
+            _commandAndQueryExecutor.Verify(executor => executor.Execute(It.Is<PersistIwtAdvice>(cmd => DbCommandCallback(cmd))), Times.Exactly(count));
+        }
+
+        private void i_write_the_advice_to_be_dispatched_from_warehouse_0_and_received_by_warehouse_1_and_as_type_2_(string despatchingWarehouseId, string receivingWarehouseId, IwtType type, StatusCode statusCode)
+        {
+            _writer.CreateAdvice(_skus, despatchingWarehouseId, receivingWarehouseId, type, statusCode);
+        }
+
+        private void i_have_a_set_of_orphan_skus()
+        {
+            _skus = new List<SkuItem> {new SkuItem {Id = "12345", Quantity = 20}};
+        }
+
+        private void i_have_a_set_of_0_orphan_skus(int count)
+        {
+            var random = new Random();
+            _skus = new List<SkuItem>();
+            for (var i = 0; i < count; i++)
+            {
+                _skus.Add(new SkuItem {Id = Guid.NewGuid().ToString(), Quantity = random.Next(1, 50)});
+            }
+        }
+
+        private void i_have_an_IwtAdviceWriter_instance()
+        {
+            var settings = new IwtAdviceServiceSettings {OutboundDropFolder = new DirectoryInfo(@"C:\").ToString(), MaxNumberOfSkusPerAdvice = maxNoOfSkus };
+            _commandAndQueryExecutor = new Mock<ICommandAndQueryExecutor>();
+            _serialiserMock = new Mock<IIwtSerialiser>();
+            _writer = new IwtAdviceWriterForTesting(settings, _commandAndQueryExecutor.Object, _serialiserMock.Object);
+        }
+
+        private bool DbCommandCallback(PersistIwtAdvice command)
+        {
+            Assert.NotNull(command.Advice);
+            return true;
+        }
+    }
+
+    internal class IwtAdviceWriterForTesting : IwtAdviceWriter
+    {
+        public IwtAdviceWriterForTesting(IwtAdviceServiceSettings settings, ICommandAndQueryExecutor commandAndQueryExecutor, IIwtSerialiser serialiser)
+            : base(settings, commandAndQueryExecutor)
+        {
+            IwtSerialiser = serialiser;
+        }
+    }
+}
