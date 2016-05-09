@@ -9,10 +9,10 @@ namespace Zico.Training.SpecUnitRemover.App
 
     public class ContentRemover : IContentRemover
     {
+        private const char SEMICOLON = ';';
         private static int _endParenthesisIndex;
         private static int _clauseStartIndex;
         private static int _parametersIndex;
-        private const string SEMICOLON = ";";
         public string Remove(string value)
         {
             var removeGiven = RemoveCommandAndApplySemiColon(value, "Given(");
@@ -55,7 +55,7 @@ namespace Zico.Training.SpecUnitRemover.App
         private static int GetEndParenthesisIndex(string clause)
         {
             int breakLine = clause.IndexOf(" .", _clauseStartIndex);
-            int semicolon = clause.IndexOf(';', _clauseStartIndex);
+            int semicolon = clause.IndexOf(SEMICOLON, _clauseStartIndex);
             int maxSearch = breakLine > 0 ? breakLine : semicolon;
             return maxSearch > 0 ? clause.LastIndexOf(")", maxSearch) : clause.LastIndexOf(")");
         }
@@ -68,9 +68,9 @@ namespace Zico.Training.SpecUnitRemover.App
             commaRemoval = RemoveBlankSpaces(commaRemoval);
             var endIndex = SkipMethodsInParameters(commaRemoval);
 
-            if (commaRemoval.IndexOf(";", endIndex) == endIndex)
+            if (commaRemoval.IndexOf(SEMICOLON, endIndex) == endIndex)
                 return commaRemoval;
-            return commaRemoval.Insert(endIndex, SEMICOLON);
+            return commaRemoval.Insert(endIndex, SEMICOLON.ToString());
         }
 
         private static string RemoveBlankSpaces(string result)
@@ -100,7 +100,7 @@ namespace Zico.Training.SpecUnitRemover.App
 
         private static string UpdateSimpleMehthod(string value)
         {
-            var result = value.Insert(_endParenthesisIndex, "(").Insert(_endParenthesisIndex + 2, SEMICOLON);
+            var result = value.Insert(_endParenthesisIndex, "(").Insert(_endParenthesisIndex + 2, SEMICOLON.ToString());
             return result;
         }
 
