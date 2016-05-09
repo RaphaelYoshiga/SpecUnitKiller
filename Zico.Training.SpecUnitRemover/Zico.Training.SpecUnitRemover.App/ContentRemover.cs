@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Zico.Training.SpecUnitRemover.App
+﻿namespace Zico.Training.SpecUnitRemover.App
 {
     public interface IContentRemover
     {
@@ -13,6 +11,7 @@ namespace Zico.Training.SpecUnitRemover.App
         private static int _endParenthesisIndex;
         private static int _clauseStartIndex;
         private static int _parametersIndex;
+
         public string Remove(string value)
         {
             var removeGiven = RemoveCommandAndApplySemiColon(value, "Given(");
