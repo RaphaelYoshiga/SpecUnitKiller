@@ -2,6 +2,7 @@
 using System.Reflection;
 using NUnit.Framework;
 using Zico.Training.SpecUnitRemover.App;
+using FluentAssertions;
 
 namespace Zico.Training.SpecUnitRemover
 {
@@ -28,9 +29,12 @@ namespace Zico.Training.SpecUnitRemover
 
             _specUnitRemover.Transform(destinationFile);
 
-            var actualFileContent = File.ReadAllText(destinationFile);
-            var expectedContent = File.ReadAllText(Path.Combine(binFolder, TEST_CASES_FOLDER, expectedFileName));
-            Assert.That(actualFileContent, Is.EqualTo(expectedContent));
+            var actualLines = File.ReadAllLines(destinationFile);
+            var expectedLines = File.ReadAllLines(Path.Combine(binFolder, TEST_CASES_FOLDER, expectedFileName));
+            for (int i = 0; i < actualLines.Length; i++)
+            {
+                actualLines[i].Should().Be(expectedLines[i]);
+            }
         }
 
         private static string GetBinFolderPath()

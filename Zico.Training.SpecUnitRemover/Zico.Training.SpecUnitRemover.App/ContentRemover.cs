@@ -1,4 +1,6 @@
-﻿namespace Zico.Training.SpecUnitRemover.App
+﻿using System;
+
+namespace Zico.Training.SpecUnitRemover.App
 {
     public interface IContentRemover
     {
@@ -7,10 +9,10 @@
 
     public class ContentRemover : IContentRemover
     {
+        private const char SEMICOLON = ';';
         private static int _endParenthesisIndex;
         private static int _clauseStartIndex;
         private static int _parametersIndex;
-        private const string SEMICOLON = ";";
         public string Remove(string value)
         {
             var removeGiven = RemoveCommandAndApplySemiColon(value, "Given(");
@@ -45,21 +47,42 @@
 
         private static void CalculateIndexes(string clause)
         {
-            _endParenthesisIndex = clause.IndexOf(")", _clauseStartIndex);
+            _endParenthesisIndex = GetEndParenthesisIndex(clause);
 
             _parametersIndex = clause.IndexOf(",", _clauseStartIndex, _endParenthesisIndex - _clauseStartIndex);
         }
 
+        private static int GetEndParenthesisIndex(string clause)
+        {
+            int breakLine = clause.IndexOf(" .", _clauseStartIndex);
+            int semicolon = clause.IndexOf(SEMICOLON, _clauseStartIndex);
+            int maxSearch = breakLine > 0 ? breakLine : semicolon;
+            return maxSearch > 0 ? clause.LastIndexOf(")", maxSearch) : clause.LastIndexOf(")");
+        }
+
         private static string UpdateParameterMethod(string clause)
         {
-            var result = clause.Insert(_parametersIndex + 1, "(").Remove(_parametersIndex, 1);
+            clause = clause.Insert(_parametersIndex, "(");
+            var commaRemoval = clause
+                .Remove(_parametersIndex + 1, 1);
+            commaRemoval = RemoveBlankSpaces(commaRemoval);
+            var endIndex = SkipMethodsInParameters(commaRemoval);
 
-            var endIndex = SkipMethodsInParameters(result);
+            if (commaRemoval.IndexOf(SEMICOLON, endIndex) == endIndex)
+                return commaRemoval;
+            return commaRemoval.Insert(endIndex, SEMICOLON.ToString());
+        }
 
-            if (result.IndexOf(";",endIndex) == endIndex +1)
-                return result;
-
-            return result.Insert(endIndex + 1, SEMICOLON);
+        private static string RemoveBlankSpaces(string result)
+        {
+            int spaceIndex = _parametersIndex + 1;
+            char x = result[spaceIndex];
+            while (x.Equals(' '))
+            {
+                result = result.Remove(spaceIndex, 1);
+                x = result[spaceIndex];
+            }
+            return result;
         }
 
         private static int SkipMethodsInParameters(string result)
@@ -77,7 +100,7 @@
 
         private static string UpdateSimpleMehthod(string value)
         {
-            var result = value.Insert(_endParenthesisIndex, "(").Insert(_endParenthesisIndex + 2, SEMICOLON);
+            var result = value.Insert(_endParenthesisIndex, "(").Insert(_endParenthesisIndex + 2, SEMICOLON.ToString());
             return result;
         }
 
